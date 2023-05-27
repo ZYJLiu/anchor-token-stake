@@ -87,7 +87,7 @@ describe("stake", () => {
       rewardTokenMint,
       vaultTokenAccountPDA,
       wallet.payer,
-      100 * 10 ** 2
+      100_000_000 * 10 ** 2
     )
 
     // Check the vault token account balance
@@ -137,7 +137,7 @@ describe("stake", () => {
   })
 
   it("Unstake", async () => {
-    await delay(5000) // wait for 5 seconds
+    await delay(10000) // wait for 5 seconds
 
     const tx = await program.methods
       .unstake()
@@ -182,6 +182,19 @@ describe("stake", () => {
       "playerStakeTokenbalance",
       playerStakeTokenbalance.value.uiAmount
     )
+  })
+
+  it("Airdrop", async () => {
+    const tx = await program.methods
+      .airdrop()
+      .accounts({
+        player: wallet.publicKey,
+        playerTokenAccount: playerTokenAccount,
+        vaultTokenAccount: vaultTokenAccountPDA,
+        mint: rewardTokenMint,
+      })
+      .rpc()
+    console.log("Your transaction signature", tx)
   })
 })
 

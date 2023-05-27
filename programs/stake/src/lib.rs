@@ -4,7 +4,7 @@ use anchor_spl::{
     token::{transfer, Mint, Token, TokenAccount, Transfer},
 };
 
-declare_id!("Fg6PaFpoGXkYsidMpWTK6W2BeZ7FEfcYkg476zPFsLnS");
+declare_id!("Ez8TA8T2rEyGjuEy6D6iY7Z7g51mPm4Zz5CRLndfbSjL");
 
 const STAKE_STATE_SEED: &[u8] = b"stake"; // Seed for the player's stake account PDA.
 const VAULT_SEED: &[u8] = b"vault"; // Seed for the vault token account PDA.
@@ -20,6 +20,34 @@ pub mod stake {
     // Alternatively, the vault token account could be initialized in the client with a PDA as the owner.
     // However, the address of the token account would be from a randomly generated keypair that would need to be stored somewhere.
     pub fn initialize_vault(_ctx: Context<InitializeVault>) -> Result<()> {
+        Ok(())
+    }
+
+    // Initialize the player's token account that will hold the tokens to be staked.
+    // This instruction is used for testing frontend to initially fund the player's token account with tokens.
+    pub fn airdrop(ctx: Context<Airdrop>) -> Result<()> {
+        // Amount of tokens to airdrop, adjusting for the mint decimals.
+        let amount = (STAKE_AMOUNT)
+            .checked_mul(10u64.pow(ctx.accounts.mint.decimals as u32))
+            .unwrap();
+
+        // Vault token account PDA signer
+        let bump = *ctx.bumps.get("vault_token_account").unwrap();
+        let signer: &[&[&[u8]]] = &[&[VAULT_SEED, &[bump]]];
+
+        // Transfer tokens from vault token account to player's token account.
+        transfer(
+            CpiContext::new_with_signer(
+                ctx.accounts.token_program.to_account_info(),
+                Transfer {
+                    from: ctx.accounts.vault_token_account.to_account_info(),
+                    to: ctx.accounts.player_token_account.to_account_info(),
+                    authority: ctx.accounts.vault_token_account.to_account_info(),
+                },
+                signer,
+            ),
+            amount,
+        )?;
         Ok(())
     }
 
@@ -136,6 +164,30 @@ pub struct InitializeVault<'info> {
     pub vault_token_account: Account<'info, TokenAccount>,
     pub mint: Account<'info, Mint>,
     pub token_program: Program<'info, Token>,
+    pub system_program: Program<'info, System>,
+}
+
+#[derive(Accounts)]
+pub struct Airdrop<'info> {
+    #[account(mut)]
+    pub player: Signer<'info>,
+
+    #[account(
+        init_if_needed,
+        payer = player,
+        associated_token::mint = mint,
+        associated_token::authority = player
+    )]
+    pub player_token_account: Account<'info, TokenAccount>,
+    #[account(
+        mut,
+        seeds = [VAULT_SEED],
+        bump,
+    )]
+    pub vault_token_account: Account<'info, TokenAccount>,
+    pub mint: Account<'info, Mint>,
+    pub token_program: Program<'info, Token>,
+    pub associated_token_program: Program<'info, AssociatedToken>,
     pub system_program: Program<'info, System>,
 }
 

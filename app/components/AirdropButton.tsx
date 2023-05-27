@@ -36,7 +36,12 @@ const AirdropButton = () => {
   }
 
   return (
-    <Button w="100px" onClick={handleClick} isLoading={isLoading}>
+    <Button
+      w="100px"
+      onClick={handleClick}
+      isLoading={isLoading}
+      isDisabled={!publicKey}
+    >
       Airdrop
     </Button>
   )

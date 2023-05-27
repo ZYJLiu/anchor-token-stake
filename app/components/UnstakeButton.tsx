@@ -43,7 +43,12 @@ const UnstakeButton = () => {
   }
 
   return (
-    <Button w="100px" onClick={handleClick} isLoading={isLoading}>
+    <Button
+      w="100px"
+      onClick={handleClick}
+      isLoading={isLoading}
+      isDisabled={!publicKey}
+    >
       Unstake
     </Button>
   )

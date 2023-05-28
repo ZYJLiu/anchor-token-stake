@@ -7,11 +7,15 @@ import { useAccounts } from "@/contexts/AccountsContext"
 const AirdropButton = () => {
   const { publicKey, sendTransaction } = useWallet()
   const { connection } = useConnection()
-  const { program } = useProgram()
-  const { playerTokenAccount, rewardTokenMint, vaultTokenAccountPDA } =
-    useAccounts()
   const [isLoading, setIsLoading] = useState(false)
 
+  // Program from context
+  const { program } = useProgram()
+  // Account addresses from context
+  const { playerTokenAccount, rewardTokenMint, vaultTokenAccountPDA } =
+    useAccounts()
+
+  // Airdrop player token, used for testing to initially fund new wallet with token to stake
   const handleClick = async () => {
     setIsLoading(true)
 

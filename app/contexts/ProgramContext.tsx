@@ -32,9 +32,10 @@ export const ProgramProvider = ({
   const wallet = useAnchorWallet()
   const { connection } = useConnection()
 
-  // State variable to hold the program values
+  // State variable to hold the program instance
   const [program, setProgram] = useState<Program<Stake> | null>(null)
 
+  // Anchor program setup
   const setup = useCallback(async () => {
     const programId = new PublicKey(
       "Ez8TA8T2rEyGjuEy6D6iY7Z7g51mPm4Zz5CRLndfbSjL"

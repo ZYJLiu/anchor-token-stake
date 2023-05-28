@@ -9,15 +9,23 @@ import { AccountInfo } from "@solana/web3.js"
 const Balance = () => {
   const { publicKey } = useWallet()
   const { connection } = useConnection()
+
+  // Program from context
   const { program } = useProgram()
+  // Account addresses from context
   const { vaultTokenAccountPDA, playerTokenAccount, playerStakeAccountPDA } =
     useAccounts()
 
+  // Vault current token balance
   const [vaultBalance, setVaultBalance] = useState(0)
+  // Player current token balance
   const [playerBalance, setPlayerBalance] = useState(0)
+  // Accrued staking reward
   const [reward, setReward] = useState(0)
+  // Player stake account state
   const [stakeState, setStakeState] = useState<any>()
 
+  // Fetch token balances and stake state
   const fetchState = async () => {
     try {
       if (
@@ -52,6 +60,7 @@ const Balance = () => {
     fetchState()
   }, [playerTokenAccount, vaultTokenAccountPDA, playerStakeAccountPDA])
 
+  // Calculate accrued staking reward, called every second and matches slot time
   useEffect(() => {
     let interval: NodeJS.Timeout | null = null
 
@@ -66,6 +75,7 @@ const Balance = () => {
         }
       }, 1000)
     } else {
+      fetchState()
       setReward(0)
     }
 
@@ -76,7 +86,8 @@ const Balance = () => {
     }
   }, [stakeState])
 
-  const handleAccountChange = async (accountInfo: AccountInfo<Buffer>) => {
+  // Handle player's stake account change event
+  const handleAccountChange = (accountInfo: AccountInfo<Buffer>) => {
     try {
       // deserialize the game state account data
       const data = program?.coder.accounts.decode(
@@ -89,6 +100,7 @@ const Balance = () => {
     }
   }
 
+  // Subscribe to player's stake account onAccountChange
   useEffect(() => {
     if (!playerStakeAccountPDA) return
 

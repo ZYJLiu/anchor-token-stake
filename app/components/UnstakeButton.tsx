@@ -7,7 +7,11 @@ import { useAccounts } from "@/contexts/AccountsContext"
 const UnstakeButton = () => {
   const { publicKey, sendTransaction } = useWallet()
   const { connection } = useConnection()
+  const [isLoading, setIsLoading] = useState(false)
+
+  // Program from context
   const { program } = useProgram()
+  // Account addresses from context
   const {
     playerTokenAccount,
     rewardTokenMint,
@@ -15,8 +19,8 @@ const UnstakeButton = () => {
     playerStakeTokenAccountPDA,
     vaultTokenAccountPDA,
   } = useAccounts()
-  const [isLoading, setIsLoading] = useState(false)
 
+  // Unstake player token and claim reward
   const handleClick = async () => {
     setIsLoading(true)
 

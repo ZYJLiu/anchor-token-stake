@@ -25,39 +25,58 @@ const Balance = () => {
   // Player stake account state
   const [stakeState, setStakeState] = useState<any>()
 
-  // Fetch token balances and stake state
-  const fetchState = async () => {
-    try {
-      if (
-        !playerTokenAccount ||
-        !vaultTokenAccountPDA ||
-        !playerStakeAccountPDA
-      )
-        return
+  // Fetch vault token balance
+  const fetchVaultBalance = async () => {
+    if (!vaultTokenAccountPDA) return
 
+    try {
       const vaultTokenbalance = await connection.getTokenAccountBalance(
         vaultTokenAccountPDA
       )
+      setVaultBalance(vaultTokenbalance.value.uiAmount!)
+    } catch (error) {
+      console.log(error)
+    }
+  }
 
+  // Fetch player token balance
+  const fetchPlayerBalance = async () => {
+    if (!playerTokenAccount) return
+
+    try {
       const playerTokenBalance = await connection.getTokenAccountBalance(
         playerTokenAccount
       )
-
-      const playerStakeAccount = await program!.account.stakeState.fetch(
-        playerStakeAccountPDA
-      )
-
-      setVaultBalance(vaultTokenbalance.value.uiAmount!)
       setPlayerBalance(playerTokenBalance.value.uiAmount!)
-      setStakeState(playerStakeAccount)
     } catch (error) {
       console.log(error)
       setPlayerBalance(0)
     }
   }
 
+  // Fetch player stake state
+  const fetchPlayerStakeState = async () => {
+    if (!playerStakeAccountPDA) return
+
+    try {
+      const playerStakeAccount = await program!.account.stakeState.fetch(
+        playerStakeAccountPDA
+      )
+      setStakeState(playerStakeAccount)
+    } catch (error) {
+      console.log(error)
+    }
+  }
+
+  // Fetch state
+  const fetchData = async () => {
+    await fetchVaultBalance()
+    await fetchPlayerBalance()
+    await fetchPlayerStakeState()
+  }
+
   useEffect(() => {
-    fetchState()
+    fetchData()
   }, [playerTokenAccount, vaultTokenAccountPDA, playerStakeAccountPDA])
 
   // Calculate accrued staking reward, called every second and matches slot time
@@ -75,7 +94,7 @@ const Balance = () => {
         }
       }, 1000)
     } else {
-      fetchState()
+      fetchData()
       setReward(0)
     }
 
